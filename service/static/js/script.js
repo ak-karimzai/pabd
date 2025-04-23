@@ -19,7 +19,7 @@ document.getElementById('numberForm').addEventListener('submit', async function(
     });
 
     const data = await res.json();
-    document.getElementById('response').textContent = 'Server response: ' + JSON.stringify(data);
+    document.getElementById('response').textContent = 'Цена: ' + JSON.stringify(data['sum']);
   } catch (err) {
     document.getElementById('response').textContent = 'Error: ' + err.message;
   }
