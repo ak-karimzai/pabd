@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route('/api/numbers', methods=["POST"])
 def load_numbers():
     request_body = request.get_json()
-    app.debug.info(f"handling \"load_numbers\": request body: {request_body}")
+    app.logger.debug(f"handling \"load_numbers\": request body: {request_body}")
     try:
         nums = [int(request_body[f'num{i}']) for i in range(1, 5)]
         for num in nums:
