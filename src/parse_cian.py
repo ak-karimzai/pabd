@@ -3,6 +3,7 @@ https://github.com/lenarsaitov/cianparser
 """
 import datetime
 
+import os
 import cianparser
 import pandas as pd
 
@@ -13,10 +14,16 @@ def main():
     """
     Function docstring
     """
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path_dir = os.path.join(file_dir, "..", "data", "raw")
+    if not os.path.exists(csv_path_dir):
+        os.makedirs(csv_path_dir, exist_ok=True)
+
     n_rooms = 1
     while n_rooms <= 2:
         t = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
-        csv_path = f'data/raw/{n_rooms}_{t}.csv'
+        csv_path = os.path.join(csv_path_dir, f'{n_rooms}_{t}.csv')
+        
         data = moscow_parser.get_flats(
             deal_type="sale",
             rooms=(n_rooms,),

@@ -1,7 +1,7 @@
+import glob
+import joblib
 import argparse
 import os.path
-import cianparser
-import joblib
 import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -16,33 +16,28 @@ os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     filename=log_file_path,
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 )
 
 
-def load_data(room_numbers):
-    logger.info("Starting data loading from cianparser...")
-    n_rooms = 1
-    moscow_parser = cianparser.CianParser(location="Москва")
+def load_data(train_data_path):
+    file_pattern = os.path.join(train_data_path, "*.csv")
+    logger.debug(f"Looking for CSV files matching pattern: {file_pattern}")
+    
+    file_list = glob.glob(file_pattern)
+    logger.info(f"Found {len(file_list)} CSV files.")
+
     main_df = pd.DataFrame()
+    for i, file in enumerate(file_list, start=1):
+        try:
+            logger.debug(f"Loading file {i}: {file}")
+            df = pd.read_csv(file)
+            main_df = pd.concat([main_df, df], axis=0)
+        except Exception as e:
+            logger.warning(f"Failed to load file {file}: {str(e)}")
 
-    while n_rooms <= room_numbers:
-        logger.info(f"Fetching data for {n_rooms}-room apartments...")
-        data = moscow_parser.get_flats(
-            deal_type="sale",
-            rooms=(n_rooms,),
-            with_saving_csv=False,
-            additional_settings={
-                "start_page": 1,
-                "end_page": 2,
-                "object_type": "secondary"
-            })
-        df = pd.DataFrame(data)
-        main_df = pd.concat([main_df, df], axis=0, ignore_index=True)
-        n_rooms += 1
-
-    logger.info(f"Finished loading data. Total rows: {len(main_df)}")
+    logger.info(f"Loaded data with shape: {main_df.shape}")
     return main_df
 
 
@@ -50,8 +45,14 @@ def process_cian(main_df):
     logger.info("Starting data processing...")
     max_price, max_meters = 100_000_000, 100
 
+    logger.info(f"main_df columns: {main_df.head()}")
+    if 'url' not in main_df.columns:
+        logger.error("'url' column is missing from the dataset.")
+        raise KeyError("'url' column not found in DataFrame")
+
     try:
         main_df['url_id'] = main_df['url'].apply(lambda x: x.split('/')[-2])
+        logger.debug("Extracted 'url_id' from 'url'")
     except Exception as e:
         logger.error("Error extracting 'url_id': %s", str(e))
         raise
@@ -63,15 +64,15 @@ def process_cian(main_df):
     return filtered_df
 
 
-def preprocess_data(data, test_size, random_state):
+def preprocess_data(data, test_size):
     logger.info("Starting data preprocessing...")
     X = data[['total_meters']]
     y = data['price']
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
-    )
+    logger.debug(f"Splitting data into train/test sets with test size={test_size}")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
 
+    logger.debug("Scaling features using StandardScaler")
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
@@ -104,23 +105,30 @@ def save_trained_model(model, model_path):
 
 
 def main():
+    file_dir = os.path.dirname(os.path.abspath(__file__))
     parser = argparse.ArgumentParser(description='Automate the machine learning model lifecycle.')
-    parser.add_argument('--test_size', type=float, default=0.2, help='Size of the test set (default: 0.2)')
-    parser.add_argument('--random_state', type=int, default=42, help='Random state for data splitting (default: 42)')
-    parser.add_argument('--max_room_numb', type=int, default=1, help='Maximum number of rooms to fetch (default: 1)')
-    parser.add_argument('--trained_model_path', type=str, default=os.path.join("..", "models", "linear_reg_model.pkl"),
+    parser.add_argument('--test_size', type=float, default=0.2,
+                        help='Size of the test set (default: 0.2)')
+    parser.add_argument('--train_data_path', type=str, default=os.path.join(file_dir, "..", "data", "raw"),
+                        help='Path to training data (not used currently)')
+    parser.add_argument('--trained_model_path', type=str,
+                        default=os.path.join(file_dir, "..", "models", "linear_reg_model.pkl"),
                         help='Path to save the trained model (default: ../models/linear_reg_model.pkl)')
     args = parser.parse_args()
 
     try:
         logger.info("Pipeline started.")
-        data = load_data(args.max_room_numb)
+        data = load_data(args.train_data_path)
         data = process_cian(data)
-        X_train, X_test, y_train, y_test = preprocess_data(data, args.test_size, args.random_state)
+        X_train, X_test, y_train, y_test = preprocess_data(data, args.test_size)
         model = train_model(X_train, y_train)
         mse = test_model(model, X_test, y_test)
         save_trained_model(model, args.trained_model_path)
         logger.info("Pipeline finished successfully.")
     except Exception as e:
-        logger.exception("An error occurred during pipeline execution: %s", str(e))
-        print(f"Error: {e}")
+        logger.critical("An unexpected error occurred during pipeline execution.", exc_info=True)
+        print(f"Critical Error: {e}")
+
+
+if __name__ == "__main__":
+    main()

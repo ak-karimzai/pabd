@@ -174,5 +174,7 @@ cython_debug/
 .pypirc
 
 *.idea
+
 data
-requests
+# requests
+*.pkl

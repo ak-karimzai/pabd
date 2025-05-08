@@ -1,0 +1,6 @@
+POST localhost:5000/api/predict
+Content-Type: application/json
+
+{
+  "area": 45.3
+}
