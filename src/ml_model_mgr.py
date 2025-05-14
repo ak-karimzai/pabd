@@ -104,7 +104,7 @@ def preprocess_data(data, test_size=0.2):
     return X_train, X_test, y_train, y_test, preprocessor
 
 
-def train_model(X_train, y_train, model_type="random_forest"):
+def train_model(X_train, y_train, model_type="linear"):
     logger.info(f"Training {model_type} model...")
     if model_type == "random_forest":
         model = RandomForestRegressor(n_estimators=100, random_state=42)

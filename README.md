@@ -64,10 +64,9 @@ jupyter notebook
 * **Neural Networks** - нейронные сети
 
 ### Метрики оценки
-* **Mean Absolute Error (MAE)**
-* **Mean Squared Error (MSE)**
-* **Root Mean Squared Error (RMSE)**
-* **R² Score**
+* **Mean Absolute Error (MAE): 22982013.91**
+* **Mean Squared Error (MSE): 41268623.41**
+* **R² Score: 0.6449**
 
 ### Результаты
 После обучения модели достигаются следующие результаты:
