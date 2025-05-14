@@ -25,4 +25,5 @@ log_config = {
     "root": {"level": "DEBUG", "handlers": ["console", "file"]},
 }
 
-LRM_TRAINED_PATH = os.path.join("models", "linear_reg_model.pkl")
+LRM_TRAINED_PATH = os.path.join("models", "apartment_price_model.pkl")
+PREPROCESSOR_PATH = os.path.join("models", "apartment_price_model_preprocessor.pkl")

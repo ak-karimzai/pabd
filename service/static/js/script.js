@@ -3,6 +3,9 @@ document.getElementById('predictForm').addEventListener('submit', async function
 
     const formData = new FormData(this);
     const area = formData.get('area');
+    const rooms_count = formData.get('rooms_count');
+    const floors_count = formData.get('floors_count');
+    const floor = formData.get('floor');
 
     try {
       const res = await fetch('/api/predict', {
@@ -10,7 +13,12 @@ document.getElementById('predictForm').addEventListener('submit', async function
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ area: parseFloat(area) })
+        body: JSON.stringify({
+            area: parseFloat(area),
+            rooms_count: parseFloat(rooms_count),
+            floors_count: parseFloat(floors_count),
+            floor: parseFloat(floor)
+        })
       });
 
       const data = await res.json();

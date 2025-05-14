@@ -1,10 +1,10 @@
 """  Parse data from cian.ru
 https://github.com/lenarsaitov/cianparser
 """
-import datetime
 
 import os
 import cianparser
+import datetime
 import pandas as pd
 
 moscow_parser = cianparser.CianParser(location="Москва")
@@ -20,7 +20,7 @@ def main():
         os.makedirs(csv_path_dir, exist_ok=True)
 
     n_rooms = 1
-    while n_rooms <= 2:
+    while n_rooms <= 4:
         t = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
         csv_path = os.path.join(csv_path_dir, f'{n_rooms}_{t}.csv')
         
@@ -30,7 +30,7 @@ def main():
             with_saving_csv=False,
             additional_settings={
                 "start_page": 1,
-                "end_page": 2,
+                "end_page": 10,
                 "object_type": "secondary"
             })
         df = pd.DataFrame(data)
