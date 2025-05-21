@@ -1,0 +1,10 @@
+schema: '2.0'
+stages:
+  download_data:
+    cmd: python src/parse_cian.py
+  process_data:
+    cmd: python src/process_data.py
+  train_model:
+    cmd: python src/train_model.py
+  evaluate_model:
+    cmd: python src/evaluate_model.py

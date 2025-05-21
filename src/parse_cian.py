@@ -10,7 +10,7 @@ import pandas as pd
 moscow_parser = cianparser.CianParser(location="Москва")
 
 
-def main():
+def parse_cian(room_numbers, pages=5):
     """
     Function docstring
     """
@@ -20,17 +20,17 @@ def main():
         os.makedirs(csv_path_dir, exist_ok=True)
 
     n_rooms = 1
-    while n_rooms <= 4:
+    while n_rooms <= room_numbers:
         t = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
         csv_path = os.path.join(csv_path_dir, f'{n_rooms}_{t}.csv')
-        
+
         data = moscow_parser.get_flats(
             deal_type="sale",
             rooms=(n_rooms,),
             with_saving_csv=False,
             additional_settings={
                 "start_page": 1,
-                "end_page": 10,
+                "end_page": pages,
                 "object_type": "secondary"
             })
         df = pd.DataFrame(data)
@@ -38,7 +38,8 @@ def main():
         df.to_csv(csv_path,
                   encoding='utf-8',
                   index=False)
-        n_rooms +=1
+        n_rooms += 1
+
 
 if __name__ == '__main__':
-    main()
+    parse_cian(room_numbers=3, pages=5)
